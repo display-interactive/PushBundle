@@ -17,18 +17,14 @@ add in AppKernel.php
                 new Display\PushBundle\DisplayPushBundle(),
                 ...
 
-
-
-
-
 Entities
 --------
 
-- Device -> store device
-- DeviceException -> store device exception on MessageType (means the device can't receinte that kind of message)
-- Message -> store the push task and the translation_data
-- MessageType -> store the different type of message. One type = One text / One translation key
-- Sending -> Store sending by device
+- Device: store device
+- DeviceException: store device exception on MessageType (means the device can't receinte that kind of message)
+- Messag: store the push task and the translation_data
+- MessageType: store the different type of message. One type = One text / One translation key
+- Sending: Store sending by device
 
 When we send the push manager always try to translate message with Message->translationData + MessageType.text + display_push: translation_domain
 
@@ -71,7 +67,7 @@ Works only for iOS to check if app is still installed
 CLI
 ---
     php app/console display:push > $pm->sendPendingMessages()
-    php app/console display:push -o ios > $pm->sendMessage(...)
+    php app/console display:push -t text -o ios -u {DEVICE_UID} -l en_US  > $pm->sendMessage(...)
 
 Backend
 -------
