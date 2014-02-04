@@ -98,7 +98,7 @@ It wait the following keys as POST data :
 
 REST DeviceException
 --------------------
-Name                     HTTP Method Path
+- Name;HTTP Method;Path
 - get_message_types        GET         /message/types.{_format}
 - post_device_exceptions   POST        /devices/exceptions.{_format}
 - get_device_exceptions    GET         /devices/{slug}/exceptions.{_format}
