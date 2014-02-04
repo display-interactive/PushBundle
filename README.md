@@ -24,11 +24,11 @@ add in AppKernel.php
 Entities
 --------
 
-Device -> store device
-DeviceException -> store device exception on MessageType (means the device can't receinte that kind of message)
-Message -> store the push task and the translation_data
-MessageType -> store the different type of message. One type = One text / One translation key
-Sending -> Store sending by device
+- Device -> store device
+- DeviceException -> store device exception on MessageType (means the device can't receinte that kind of message)
+- Message -> store the push task and the translation_data
+- MessageType -> store the different type of message. One type = One text / One translation key
+- Sending -> Store sending by device
 
 When we send the push manager always try to translate message with Message->translationData + MessageType.text + display_push: translation_domain
 
