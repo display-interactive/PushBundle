@@ -104,7 +104,7 @@ get_message_types: get all message types ex: [{id: 1, text: "test"}, {id: 2, tex
 
 post_device_exceptions: add an exception
 it wait the following keys as post data;
-- uid: Device Uid or Id uid: 54a9d410ea6539d8797c62c5f8c95cb551eb99cc, id: 27507c9de8c78b3f
+- uid: Device Uid or Id ex: uid:54a9d410ea6539d8797c62c5f8c95cb551eb99cc, id: 27507c9de8c78b3f
 - message_type_id: The message type id
 
 get_device_exceptions: get all devices exceptions ex: [{"id":1,"message_type_id":1,"message_type_text":"test"}]
