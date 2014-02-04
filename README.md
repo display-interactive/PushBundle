@@ -92,8 +92,8 @@ It wait the following keys as POST data :
 - os_name: The operating system name ex: android, ios
 - os_version: The operating system version ex: 4.4.1
 
-REST DeviceException
---------------------
+REST for DeviceException
+------------------------
 - Name;HTTP Method;Path
 - get_message_types        GET         /message/types.{_format}
 - post_device_exceptions   POST        /devices/exceptions.{_format}
