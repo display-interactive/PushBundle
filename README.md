@@ -35,9 +35,9 @@ When we send the push manager always try to translate message with Message->tran
 configure if you want
 ---------------------
 
-display_push
-    entity_manager: 'name of the default entity manager used by the bundle'
-    translation_domain: 'default translation domain so default is null'
+    display_push
+        entity_manager: 'name of the default entity manager used by the bundle'
+        translation_domain: 'default translation domain so default is null'
 
 
 PushManager
@@ -48,9 +48,12 @@ Text can be translation key or text
 
     MyBundle:
         key: push with my friend %friend%
+    ...
 
+    ...
     $pm->addMessage('MyBundle.key', array('%friend' => 'Developper'));
     $pm->addMessage('push to everybody');
+    ..
 
 Send pending message
 
@@ -84,14 +87,14 @@ URL to register device
     post_device              POST   ANY    ANY  /devices.{_format}
 
 It wait the following keys as POST data :
-     uid: Device Uid or Id uid: 54a9d410ea6539d8797c62c5f8c95cb551eb99cc, id: 27507c9de8c78b3f
-     token: Device Token
-     model: Device model ex: iPhone
-     locale: Locale of the app ex: fr_FR , en, es_ES
-     app_name: The App Name ex: Disney Web Radio
-     app_version: The application version ex: 1.0
-     os_name: The operating system name ex: android, ios
-     os_version: The operating system version ex: 4.4.1
+- uid: Device Uid or Id uid: 54a9d410ea6539d8797c62c5f8c95cb551eb99cc, id: 27507c9de8c78b3f
+- token: Device Token
+- model: Device model ex: iPhone
+- locale: Locale of the app ex: fr_FR , en, es_ES
+- app_name: The App Name ex: Disney Web Radio
+- app_version: The application version ex: 1.0
+- os_name: The operating system name ex: android, ios
+- os_version: The operating system version ex: 4.4.1
 
 REST DeviceException
 --------------------
@@ -101,13 +104,12 @@ post_device_exceptions   POST        /devices/exceptions.{_format}
 get_device_exceptions    GET         /devices/{slug}/exceptions.{_format}
 delete_device_exception  DELETE      /devices/{id}/exception.{_format}
 
-
 get_message_types: get all message types ex: [{id: 1, text: "test"}, {id: 2, text: "ceci est un super test"}]
 
 post_device_exceptions: add an exception
 it wait the following keys as post data;
-     uid: Device Uid or Id uid: 54a9d410ea6539d8797c62c5f8c95cb551eb99cc, id: 27507c9de8c78b3f
-     message_type_id: The message type id
+- uid: Device Uid or Id uid: 54a9d410ea6539d8797c62c5f8c95cb551eb99cc, id: 27507c9de8c78b3f
+- message_type_id: The message type id
 
 get_device_exceptions: get all devices exceptions ex: [{"id":1,"message_type_id":1,"message_type_text":"test"}]
 
