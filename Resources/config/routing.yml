@@ -1,0 +1,14 @@
+device:
+    type: rest
+    resource: Display\PushBundle\Controller\DeviceController
+    prefix: /
+
+message_type:
+    type: rest
+    resource: Display\PushBundle\Controller\MessageTypeController
+    prefix: /
+
+backend:
+    resource: Display\PushBundle\Controller\BackendController
+    type:     annotation
+    prefix:   /backend

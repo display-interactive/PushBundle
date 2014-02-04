@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="display_push.entity_manager" />
+        <parameter key="display_push.translation_domain" />
+        <parameter key="display.push.manager.class">Display\PushBundle\Push\PushManager</parameter>
+    </parameters>
+
+    <services>
+        <service id="display.push.manager" class="%display.push.manager.class%">
+            <argument type="service" id="service_container" />
+            <argument>%display_push.entity_manager%</argument>
+            <argument>%display_push.translation_domain%</argument>
+        </service>
+    </services>
+</container>

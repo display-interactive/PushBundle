@@ -1,0 +1,26 @@
+{
+    "name": "display-interactive/push-bundle",
+    "description": "This bundle is to handle push for Android/iOS",
+    "keywords": ["push"],
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Display Interactive",
+            "email": "git@display-interactive.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/symfony": ">=2.2.0, <2.4",
+        "doctrine/orm": ">=2.2.3,<2.4-dev",
+        "doctrine/doctrine-bundle": ">=1.0.0, <1.3",
+        "friendsofsymfony/rest-bundle": "1.2.*@dev",
+        "richsage/rms-push-notifications-bundle": "dev-master"
+    },
+    "autoload": {
+        "psr-0": { "Display\\PushBundle": "" }
+    },
+    "target-dir": "Display/CmsBundle",
+    "minimum-stability": "dev"
+}
