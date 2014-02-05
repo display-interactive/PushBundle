@@ -22,5 +22,5 @@
     "autoload": {
         "psr-0": { "Display\\PushBundle": "" }
     },
-    "target-dir": "Display/CmsBundle"
+    "target-dir": "Display/Pushundle"
 }
