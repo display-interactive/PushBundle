@@ -12,15 +12,15 @@
     ],
     "require": {
         "php": ">=5.3.3",
-        "symfony/symfony": ">=2.2.0, <2.4",
-        "doctrine/orm": ">=2.2.3,<2.4-dev",
-        "doctrine/doctrine-bundle": ">=1.0.0, <1.3",
+        "symfony/symfony": "*",
+        "doctrine/orm": "*",
+        "doctrine/doctrine-bundle": "*",
         "friendsofsymfony/rest-bundle": "1.2.*@dev",
+        "jms/serializer-bundle": "*",
         "richsage/rms-push-notifications-bundle": "dev-master"
     },
     "autoload": {
         "psr-0": { "Display\\PushBundle": "" }
     },
-    "target-dir": "Display/CmsBundle",
-    "minimum-stability": "dev"
+    "target-dir": "Display/CmsBundle"
 }
