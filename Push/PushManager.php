@@ -230,6 +230,7 @@ class PushManager
             case DeviceRepository::OS_ANDROID:
                 $push = new AndroidMessage();
                 $push->setGCM(true);
+                $push->setData(array('id' => $message->getId()));
                 break;
             default:
                 return null;

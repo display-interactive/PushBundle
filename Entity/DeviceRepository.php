@@ -35,8 +35,8 @@ class DeviceRepository extends EntityRepository
     public static function getOperatingSystems()
     {
         return array(
-            self::OS_ANDROID,
-            self::OS_IOS
+            self::OS_ANDROID => self::OS_ANDROID,
+            self::OS_IOS => self::OS_IOS
         );
     }
 
