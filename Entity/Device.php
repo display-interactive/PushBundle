@@ -3,6 +3,7 @@
 namespace Display\PushBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Device
@@ -81,8 +82,7 @@ class Device extends AbstractEntity
     private $status;
 
     /**
-     *
-     * @var \Doctrine\Common\Collections\ArrayCollection $exceptions
+     * @var ArrayCollection $exceptions
      * @ORM\OneToMany(targetEntity="DeviceException", mappedBy="device", cascade={"persist"})
      */
     private $exceptions;
@@ -91,13 +91,13 @@ class Device extends AbstractEntity
      */
     public function __construct()
     {
-        $this->exceptions = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->exceptions = new ArrayCollection();
     }
 
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -120,7 +120,7 @@ class Device extends AbstractEntity
     /**
      * Get uid
      *
-     * @return string 
+     * @return string
      */
     public function getUid()
     {
@@ -143,7 +143,7 @@ class Device extends AbstractEntity
     /**
      * Get token
      *
-     * @return string 
+     * @return string
      */
     public function getToken()
     {
@@ -166,7 +166,7 @@ class Device extends AbstractEntity
     /**
      * Get model
      *
-     * @return string 
+     * @return string
      */
     public function getModel()
     {
@@ -189,7 +189,7 @@ class Device extends AbstractEntity
     /**
      * Get locale
      *
-     * @return string 
+     * @return string
      */
     public function getLocale()
     {
@@ -212,7 +212,7 @@ class Device extends AbstractEntity
     /**
      * Get appName
      *
-     * @return string 
+     * @return string
      */
     public function getAppName()
     {
@@ -235,7 +235,7 @@ class Device extends AbstractEntity
     /**
      * Get appVersion
      *
-     * @return string 
+     * @return string
      */
     public function getAppVersion()
     {
@@ -258,7 +258,7 @@ class Device extends AbstractEntity
     /**
      * Get osName
      *
-     * @return string 
+     * @return string
      */
     public function getOsName()
     {
@@ -281,7 +281,7 @@ class Device extends AbstractEntity
     /**
      * Get osVersion
      *
-     * @return string 
+     * @return string
      */
     public function getOsVersion()
     {
@@ -304,7 +304,7 @@ class Device extends AbstractEntity
     /**
      * Get status
      *
-     * @return string 
+     * @return string
      */
     public function getStatus()
     {
@@ -337,7 +337,7 @@ class Device extends AbstractEntity
     /**
      * Get exceptions
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getExceptions()
     {

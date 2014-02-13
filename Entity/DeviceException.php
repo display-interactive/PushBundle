@@ -25,7 +25,7 @@ class DeviceException extends AbstractEntity
 
     /**
      * @var Device
-     * @ORM\ManyToOne(targetEntity="Device")
+     * @ORM\ManyToOne(targetEntity="Device", inversedBy="exceptions")
      * @ORM\JoinColumn(name="device_id", referencedColumnName="id", onDelete="CASCADE")
      *
      */
@@ -42,7 +42,7 @@ class DeviceException extends AbstractEntity
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -65,7 +65,7 @@ class DeviceException extends AbstractEntity
     /**
      * Get device
      *
-     * @return \Display\PushBundle\Entity\Device 
+     * @return \Display\PushBundle\Entity\Device
      */
     public function getDevice()
     {
@@ -88,7 +88,7 @@ class DeviceException extends AbstractEntity
     /**
      * Get messageType
      *
-     * @return \Display\PushBundle\Entity\MessageType 
+     * @return \Display\PushBundle\Entity\MessageType
      */
     public function getMessageType()
     {
