@@ -20,6 +20,7 @@ class PushCommand extends ContainerAwareCommand
             ->addOption('locale', 'l', InputOption::VALUE_OPTIONAL, 'filter devices by locale')
             ->addOption('os', 'o', InputOption::VALUE_OPTIONAL, 'filter devices by os')
             ->addOption('uid', 'u', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'force device uid')
+            ->addOption('app_id', 'a', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'force application id')
         ;
     }
 
@@ -34,11 +35,12 @@ class PushCommand extends ContainerAwareCommand
             $text = $input->getOption('text');
             $locale = $input->getOption('locale');
             $uids = $input->getOption('uid');
+            $appIds = $input->getOption('app_id');
             $os = $input->getOption('os');
 
             $pm = $this->getContainer()->get('display.push.manager');
             if ($text) {
-                $pm->sendMessage($text, $os, $locale, $uids);
+                $pm->sendMessage($text, $os, $appIds, $locale, $uids);
             } else {
                 $pm->sendPendingMessages();
             }

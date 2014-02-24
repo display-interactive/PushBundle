@@ -1,6 +1,7 @@
 <?php
 namespace Display\PushBundle\Push;
 
+use Display\PushBundle\Entity\Application;
 use Display\PushBundle\Entity\Device;
 use Display\PushBundle\Entity\DeviceException;
 use Display\PushBundle\Entity\DeviceRepository;
@@ -93,15 +94,16 @@ class PushManager
      * Send a specific message to a specific device
      *
      * @param string $text
-     * @param string $locale
      * @param string $os
+     * @param array $applications
+     * @param string $locale
      * @param array $uids
      */
-    public function sendMessage($text, $os = null, $locale = null, $uids = array())
+    public function sendMessage($text, $os = null, $applicationIds = array(), $locale = null, $uids = array())
     {
         $message = $this->addMessage($text);
         //Get devices by uid and locale
-        $devices = $this->manager->getRepository('DisplayPushBundle:Device')->findByUids($os, $locale, $uids);
+        $devices = $this->manager->getRepository('DisplayPushBundle:Device')->findByUids($os, $applicationIds, $locale, $uids);
 
         /** @var Device $device */
         foreach ($devices as $device) {

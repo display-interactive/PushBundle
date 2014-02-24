@@ -29,6 +29,13 @@ class PushType extends AbstractType
                 'choices' => DeviceRepository::getOperatingSystems(),
                 'required' => false
             ))
+            ->add('applications', 'entity', array(
+                'label' => 'Applications',
+                'attr' => array('class' => 'chosen-multiple'),
+                'class' => 'Display\PushBundle\Entity\Application',
+                'multiple' => true,
+                'required' => false
+            ))
             ->add('uid', 'textarea', array(
                 'label' => 'Uid (separator ";")',
                 'attr' => array('rows' => 2),

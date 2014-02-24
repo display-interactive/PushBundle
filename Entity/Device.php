@@ -51,16 +51,11 @@ class Device extends AbstractEntity
     private $locale;
 
     /**
-     * @var string
-     * @ORM\Column(name="app_name", type="string", length=64)
+     * @var Application
+     * @ORM\ManyToOne(targetEntity="Application", cascade={"persist"})
+     * @ORM\JoinColumn(name="application_id", referencedColumnName="id")
      */
-    private $appName;
-
-    /**
-     * @var string
-     * @ORM\Column(name="app_version", type="string", length=16)
-     */
-    private $appVersion;
+    private $application;
 
     /**
      * @var string
@@ -197,52 +192,6 @@ class Device extends AbstractEntity
     }
 
     /**
-     * Set appName
-     *
-     * @param string $appName
-     * @return Device
-     */
-    public function setAppName($appName)
-    {
-        $this->appName = $appName;
-
-        return $this;
-    }
-
-    /**
-     * Get appName
-     *
-     * @return string
-     */
-    public function getAppName()
-    {
-        return $this->appName;
-    }
-
-    /**
-     * Set appVersion
-     *
-     * @param string $appVersion
-     * @return Device
-     */
-    public function setAppVersion($appVersion)
-    {
-        $this->appVersion = $appVersion;
-
-        return $this;
-    }
-
-    /**
-     * Get appVersion
-     *
-     * @return string
-     */
-    public function getAppVersion()
-    {
-        return $this->appVersion;
-    }
-
-    /**
      * Set osName
      *
      * @param string $osName
@@ -309,6 +258,29 @@ class Device extends AbstractEntity
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set application
+     *
+     * @param Application $application
+     * @return Device
+     */
+    public function setApplication(Application $application = null)
+    {
+        $this->application = $application;
+
+        return $this;
+    }
+
+    /**
+     * Get application
+     *
+     * @return Application
+     */
+    public function getApplication()
+    {
+        return $this->application;
     }
 
     /**

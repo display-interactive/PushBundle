@@ -2,6 +2,7 @@
 
 namespace Display\PushBundle\Controller;
 
+use Display\PushBundle\Entity\Application;
 use Display\PushBundle\Form\PushType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,7 +43,14 @@ class BackendController extends Controller
             $pm = $this->get('display.push.manager');
             $data = $form->getData();
             $uids = array_filter(array_map('trim', explode(';', $data['uid'])));
-            $pm->sendMessage($data['text'], $data['os'], $data['locale'], $uids);
+
+            $applicationIds = array();
+            /** @var Application $app */
+            foreach ($data['applications'] as $app) {
+                $applicationIds[] = $app->getId();
+            }
+
+            $pm->sendMessage($data['text'], $data['os'], $applicationIds, $data['locale'], $uids);
 
             return $this->redirect($this->generateUrl('backend'));
         }

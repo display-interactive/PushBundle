@@ -55,18 +55,19 @@ class DeviceRepository extends EntityRepository
             ->createQuery($dql)
             ->setParameter('status', self::STATUS_ACTIVE)
             ->getResult()
-        ;
+            ;
     }
 
     /**
      * Get device by Uid
      *
      * @param string $os
+     * @param array $applicationIds
      * @param string $locale
      * @param array $uids
      * @return array
      */
-    public function findByUids($os = null, $locale = null, array $uids)
+    public function findByUids($os = null, $applicationIds = array(), $locale = null, array $uids)
     {
         $qb = $this
             ->createQueryBuilder('d')
@@ -78,6 +79,14 @@ class DeviceRepository extends EntityRepository
             $qb
                 ->andWhere('d.osName = :os')
                 ->setParameter('os', $os)
+            ;
+        }
+
+        if (count($applicationIds) > 0) {
+            $qb
+                ->leftJoin('d.application', 'a')
+                ->andWhere($qb->expr()->in('a.id', ':application_id'))
+                ->setParameter('application_id', $applicationIds)
             ;
         }
 
@@ -98,6 +107,6 @@ class DeviceRepository extends EntityRepository
         return $qb
             ->getQuery()
             ->getResult()
-        ;
+            ;
     }
 }

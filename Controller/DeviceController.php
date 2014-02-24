@@ -2,6 +2,7 @@
 
 namespace Display\PushBundle\Controller;
 
+use Display\PushBundle\Entity\Application;
 use Display\PushBundle\Entity\Device;
 use Display\PushBundle\Entity\DeviceException;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -37,16 +38,29 @@ class DeviceController extends FOSRestController implements ClassResourceInterfa
             $device = new Device();
         }
 
+        $application = $repository->findOneBy(array(
+            'name' => $paramFetcher->get('app_name'),
+            'version' => $paramFetcher->get('app_version')
+        ));
+
+        if (!$application) {
+            $application = new Application();
+        }
+        $device->setApplication($application);
+
         $device
             ->setUid($paramFetcher->get('uid'))
             ->setToken($paramFetcher->get('token'))
             ->setModel($paramFetcher->get('model'))
             ->setLocale($paramFetcher->get('locale'))
-            ->setAppName($paramFetcher->get('app_name'))
-            ->setAppVersion($paramFetcher->get('app_version'))
             ->setOsName($paramFetcher->get('os_name'))
             ->setOsVersion($paramFetcher->get('os_version'))
             ->setStatus(DeviceRepository::STATUS_ACTIVE)
+        ;
+
+        $application
+            ->setName($paramFetcher->get('app_name'))
+            ->setVersion($paramFetcher->get('app_version'))
         ;
 
         $em->persist($device);
