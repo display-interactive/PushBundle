@@ -8,10 +8,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 /**
  * Device
  *
- * @ORM\Table("device")
+ * @ORM\Table("push_device")
  * @ORM\Entity(repositoryClass="Display\PushBundle\Entity\DeviceRepository")
  */
-class Device extends AbstractEntity
+class Device extends Entity
 {
     /**
      * @var integer

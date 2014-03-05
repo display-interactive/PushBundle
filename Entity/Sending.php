@@ -7,10 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Sending
  *
- * @ORM\Table("sending")
+ * @ORM\Table("push_sending")
  * @ORM\Entity(repositoryClass="Display\PushBundle\Entity\SendingRepository")
  */
-class Sending extends AbstractEntity
+class Sending extends Entity
 {
     /**
      * @var integer

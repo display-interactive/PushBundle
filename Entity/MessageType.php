@@ -8,10 +8,10 @@ use JMS\Serializer\Annotation\Groups;
 /**
  * MessageType
  *
- * @ORM\Table("message_type")
+ * @ORM\Table("push_message_type")
  * @ORM\Entity(repositoryClass="Display\PushBundle\Entity\MessageTypeRepository")
  */
-class MessageType extends AbstractEntity
+class MessageType extends Entity
 {
     /**
      * @var integer

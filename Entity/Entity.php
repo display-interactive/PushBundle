@@ -5,12 +5,12 @@ namespace Display\PushBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Class AbstractEntity
+ * abstract Class Entity
  * @package Display\PushBundle\Entity
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()
  */
-abstract class AbstractEntity
+abstract class Entity
 {
     /**
      * @var \DateTime

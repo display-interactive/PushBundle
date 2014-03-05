@@ -8,10 +8,10 @@ use JMS\Serializer\Annotation\Groups;
 /**
  * DeviceException
  *
- * @ORM\Table("device_exception")
+ * @ORM\Table("push_device_exception")
  * @ORM\Entity(repositoryClass="Display\PushBundle\Entity\DeviceExceptionRepository")
  */
-class DeviceException extends AbstractEntity
+class DeviceException extends Entity
 {
     /**
      * @var integer

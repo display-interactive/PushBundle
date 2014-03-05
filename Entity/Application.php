@@ -8,10 +8,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 /**
  * Device
  *
- * @ORM\Table("application")
+ * @ORM\Table("push_application")
  * @ORM\Entity
  */
-class Application extends AbstractEntity
+class Application extends Entity
 {
     /**
      * @var integer
