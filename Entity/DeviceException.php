@@ -42,7 +42,7 @@ class DeviceException extends Entity
     /**
      * Get id
      *
-     * @return integer
+     * @return integer 
      */
     public function getId()
     {
@@ -65,7 +65,7 @@ class DeviceException extends Entity
     /**
      * Get device
      *
-     * @return \Display\PushBundle\Entity\Device
+     * @return \Display\PushBundle\Entity\Device 
      */
     public function getDevice()
     {
@@ -88,7 +88,7 @@ class DeviceException extends Entity
     /**
      * Get messageType
      *
-     * @return \Display\PushBundle\Entity\MessageType
+     * @return \Display\PushBundle\Entity\MessageType 
      */
     public function getMessageType()
     {

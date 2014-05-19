@@ -7,8 +7,8 @@ use Display\PushBundle\Entity\DeviceException;
 use Display\PushBundle\Entity\DeviceRepository;
 use Display\PushBundle\Entity\Message;
 use Display\PushBundle\Entity\MessageType;
-use Display\PushBundle\Entity\Sending;
-use Display\PushBundle\Entity\SendingRepository;
+use Display\PushBundle\Entity\Sent;
+use Display\PushBundle\Entity\SentRepository;
 use RMS\PushNotificationsBundle\Device\iOS\Feedback;
 use RMS\PushNotificationsBundle\Message\AndroidMessage;
 use RMS\PushNotificationsBundle\Message\iOSMessage;
@@ -28,9 +28,9 @@ class PushManager
     private $manager;
 
     /**
-     * @var string
+     * @var array()
      */
-    private $translationDomain;
+    private $translationDomains;
 
     /**
      * @var \RMS\PushNotificationsBundle\Service\Notifications
@@ -40,13 +40,13 @@ class PushManager
     /**
      * @param Container $container
      * @param string $name
-     * @param string $translationDomain
+     * @param mixed $translationDomains
      */
-    public function __construct(Container $container, $name, $translationDomain = null)
+    public function __construct(Container $container, $name, $translationDomains = null)
     {
         $this->container = $container;
         $this->manager = $container->get('doctrine')->getManager($name);
-        $this->translationDomain = $translationDomain;
+        $this->translationDomains = is_array($translationDomains) ? $translationDomains : array() ;
         $this->pusher = $container->get('rms_push_notifications');
     }
 
@@ -54,16 +54,24 @@ class PushManager
      * Add push message
      *
      * @param string $text text or translation key
-     * @param string $data translation data
+     * @param mixed $data translation data
+     * @param array $applications list of application type for which we want to send the given push message
+     * @param array $customData
      * @return Message
      */
-    public function addMessage($text, $data = null)
+    public function addMessage($text, $data = null, $applications = array(), $customData = array())
     {
         $message = new Message();
         $message
             ->setMessageType($this->addMessageType($text))
             ->setTranslationData($data)
+            ->setCustomData($customData)
         ;
+
+        /** @var Application $app */
+        foreach ($applications as $app) {//todo: found why the manager does not known this entity
+            $message->addApplication($this->manager->merge($app));
+        }
 
         $this->manager->persist($message);
         $this->manager->flush();
@@ -81,7 +89,12 @@ class PushManager
         foreach ($this->getPendingMessages() as $message) {
             /** @var Device $device */
             foreach ($devices as $device) {
-                $this->send($device, $message);
+                //if message does not target application send to all device or if message applications match device application
+                if ($message->getApplications()->count() === 0
+                    || $message->getApplications()->contains($device->getApplication())
+                ) {
+                    $this->send($device, $message);
+                }
             }
             $message->setIsPending(false);
         }
@@ -94,9 +107,9 @@ class PushManager
      * Send a specific message to a specific device
      *
      * @param string $text
-     * @param string $os
-     * @param array $applications
-     * @param string $locale
+     * @param string|null $os
+     * @param array $applicationIds
+     * @param string|null $locale
      * @param array $uids
      */
     public function sendMessage($text, $os = null, $applicationIds = array(), $locale = null, $uids = array())
@@ -126,8 +139,7 @@ class PushManager
         foreach ($this->getActiveDevices() as $device) {
             /** @var Feedback $uid */
             foreach ($uuids as $uid) {
-                if ($device->getToken() === $uid->uuid
-                ) {
+                if ($device->getToken() === $uid->uuid) {
                     $device->setStatus(DeviceRepository::STATUS_UNINSTALLED);
                     $this->manager->persist($device);
                 }
@@ -149,9 +161,9 @@ class PushManager
         if ($this->hasException($device, $message)) return null;
 
         $this->container->get('logger')->addDebug(sprintf('sending to %s device: %s', $device->getOsName(), $device->getId()));
-        $sending = new Sending();
+        $sending = new Sent();
         $sending
-            ->setStatus(SendingRepository::STATUS_QUEUED)
+            ->setStatus(SentRepository::STATUS_QUEUED)
             ->setDevice($device)
             ->setMessage($message)
         ;
@@ -160,12 +172,13 @@ class PushManager
         $push = $this->getPushMessage($device, $message);
         //$push is null if device is not iOS|Android && push succeed
         if (null !== $push && $this->pusher->send($push)) {
-            $sending->setStatus(SendingRepository::STATUS_DELIVERED); ;
+            $sending->setStatus(SentRepository::STATUS_DELIVERED); ;
             $sending->setDeliveredAt(new \DateTime());
             $success = true;
         } else {
-            $sending->setStatus(SendingRepository::STATUS_FAILED); ;
+            $sending->setStatus(SentRepository::STATUS_FAILED); ;
             $success = false;
+            $device->setStatus(DeviceRepository::STATUS_UNINSTALLED);
         }
 
         return $success;
@@ -221,7 +234,7 @@ class PushManager
      */
     protected function getPushMessage(Device $device, Message $message)
     {
-        $translator = $this->container->get('translator');
+        $translator = $this->container->get('display_opta.custom_translator');
         switch ($device->getOsName()) {
             case DeviceRepository::OS_IOS:
                 $push = new iOSMessage();
@@ -240,10 +253,22 @@ class PushManager
         }
         $push->setDeviceIdentifier($device->getToken());
 
+        if ($message->getCustomData() !== null) {
+            foreach ($message->getCustomData() as $key => $value) {
+                $push->addCustomData($key, $value);
+            }
+        }
+
+        $transData = array();
+        if ($message->getTranslationData() !== null) {
+            foreach ($message->getTranslationData() as $key => $value) {
+                $transData[$key] = $translator->trans($value, array(), $device->getLocale());
+            }
+        }
+
         $text = $translator->trans(
             $message->getMessageType()->getText(),
-            $message->getTranslationData() !== null ? $message->getTranslationData() : array(),
-            $this->translationDomain,
+            $transData,
             $device->getLocale()
         );
         $push->setMessage($text);

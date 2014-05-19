@@ -5,6 +5,7 @@ namespace Display\PushBundle\Controller;
 use Display\PushBundle\Entity\Application;
 use Display\PushBundle\Entity\Device;
 use Display\PushBundle\Entity\DeviceException;
+use Display\PushBundle\Entity\MessageType;
 use Doctrine\Common\Persistence\ObjectManager;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Request\ParamFetcher;
@@ -29,73 +30,102 @@ class DeviceController extends FOSRestController implements ClassResourceInterfa
      */
     public function postAction(ParamFetcher $paramFetcher)
     {
-        /** @var ObjectManager $em */
-        $em = $this->getDoctrine()->getManager();
-        $repository = $em->getRepository('DisplayPushBundle:Device');
-        $device = $repository->findOneBy(array('uid' => $paramFetcher->get('uid')));
+        try {
+            /** @var ObjectManager $em */
+            $em = $this->getDoctrine()->getManager();
+            $repository = $em->getRepository('DisplayPushBundle:Device');
+            $device = $repository->findOneBy(array('uid' => $paramFetcher->get('uid')));
 
-        if (!$device) {
-            $device = new Device();
+            if (!$device) {
+                $device = $repository->findOneBy(array('token' => $paramFetcher->get('token')));
+                if (!$device) {
+                    $device = new Device();
+                }
+            }
+
+            $application = $em->getRepository('DisplayPushBundle:Application')->findOneBy(array(
+                'name' => $paramFetcher->get('app_name'),
+                'version' => $paramFetcher->get('app_version')
+            ));
+
+            if (!$application) {
+                $application = new Application();
+            }
+            $device->setApplication($application);
+
+            $device
+                ->setUid($paramFetcher->get('uid'))
+                ->setToken($paramFetcher->get('token'))
+                ->setModel($paramFetcher->get('model'))
+                ->setLocale($paramFetcher->get('locale'))
+                ->setOsName($paramFetcher->get('os_name'))
+                ->setOsVersion($paramFetcher->get('os_version'))
+                ->setStatus(DeviceRepository::STATUS_ACTIVE)
+            ;
+
+            $application
+                ->setName($paramFetcher->get('app_name'))
+                ->setVersion($paramFetcher->get('app_version'))
+            ;
+
+            $em->persist($device);
+            $em->flush();
+            $success = true;
+        } catch (\Exception $e) {
+            $success = false;
         }
 
-        $application = $repository->findOneBy(array(
-            'name' => $paramFetcher->get('app_name'),
-            'version' => $paramFetcher->get('app_version')
-        ));
-
-        if (!$application) {
-            $application = new Application();
-        }
-        $device->setApplication($application);
-
-        $device
-            ->setUid($paramFetcher->get('uid'))
-            ->setToken($paramFetcher->get('token'))
-            ->setModel($paramFetcher->get('model'))
-            ->setLocale($paramFetcher->get('locale'))
-            ->setOsName($paramFetcher->get('os_name'))
-            ->setOsVersion($paramFetcher->get('os_version'))
-            ->setStatus(DeviceRepository::STATUS_ACTIVE)
-        ;
-
-        $application
-            ->setName($paramFetcher->get('app_name'))
-            ->setVersion($paramFetcher->get('app_version'))
-        ;
-
-        $em->persist($device);
-        $em->flush();
-
-        return $this->handleView($this->view(array('success' => true), 200));
+        return $this->handleView($this->view(compact('success'), 200));
     }
 
     /**
      * Add a device exception
-     * post_device_exceptions > [POST] /devices/{slug}/exceptions
+     * post_device_exceptions > [POST] /devices/{uid}/exceptions
      *
-     * @RequestParam(name="uid", requirements="[a-zA-Z0-9-]+", description="Device Uid or Id uid: 54a9d410ea6539d8797c62c5f8c95cb551eb99cc, id: 27507c9de8c78b3f", nullable=false)
-     * @RequestParam(name="message_type_id", requirements="\d+", description="The message type id", nullable=false)
+     * @RequestParam(name="ids", requirements="[0-9,]+", description="The message type id", nullable=false)
      */
-    public function postExceptionsAction(ParamFetcher $paramFetcher)
+    public function postExceptionsAction(ParamFetcher $paramFetcher, $uid)
     {
-        /** @var ObjectManager $em */
-        $em = $this->getDoctrine()->getManager();
-        $repository = $em->getRepository('DisplayPushBundle:Device');
-        $device = $repository->findOneBy(array('uid' => $paramFetcher->get('uid')));
-        $type = $em->find('DisplayPushBundle:MessageType', $paramFetcher->get('message_type_id'));
+        try {
+            /** @var ObjectManager $em */
+            $em = $this->getDoctrine()->getManager();
+            $repository = $em->getRepository('DisplayPushBundle:Device');
+            $device = $repository->findOneBy(array('uid' => $uid));
+            $ids = explode(',', $paramFetcher->get('ids'));
 
+            $types = array();
+            foreach ($ids as $id) {
+                $types[] = $em->find('DisplayPushBundle:MessageType', $id);
+            }
 
-        $success = false;
-        if ($device && $type) {
-            $exception = new DeviceException();
-            $exception
-                ->setDevice($device)
-                ->setMessageType($type)
-            ;
+            $success = false;
+            if ($device && count($types)) {
+                $exceptions = $device->getExceptions();
+                /** @var MessageType $type */
+                foreach ($types as $type) {
+                    $found = false;
+                    /** @var DeviceException $exception */
+                    foreach ($exceptions as $exception) {
+                        if ($exception->getMessageType()->getId() == $type->getId()) {
+                            $found = true;
+                        }
+                    }
 
-            $em->persist($exception);
-            $em->flush();
-            $success = true;
+                    if (!$found) {
+                        $exception = new DeviceException();
+                        $exception
+                            ->setDevice($device)
+                            ->setMessageType($type)
+                        ;
+
+                        $em->persist($exception);
+                        $success = true;
+                    }
+                }
+                $em->flush();
+            }
+        } catch (\Exception $e) {
+            $success = false;
         }
 
         return $this->handleView($this->view(compact('success'), 200));
@@ -105,37 +135,56 @@ class DeviceController extends FOSRestController implements ClassResourceInterfa
      * Get device exceptions for a given phone
      * get_device_exceptions > [GET] /devices/{slug}/exceptions
      *
-     * @param mixed $slug
+     * @param mixed $uid
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function getExceptionsAction($slug)
+    public function getExceptionsAction($uid)
     {
         /** @var ObjectManager $em */
         $em = $this->getDoctrine()->getManager();
         $repository = $em->getRepository('DisplayPushBundle:DeviceException');
 
-        return $this->handleView($this->view($repository->findByDeviceUid($slug), 200));
+        return $this->handleView($this->view($repository->findByDeviceUid($uid), 200));
     }
 
     /**
      * Delete a device exception
-     * delete_device_exceptions > [DELETE] /devices/{id}/exceptions
+     * delete_device_exceptions > [DELETE] /devices/{uid}/exceptions/{ids}
      *
-     * @param int $id
+     * @param string $uid
+     * @param mixed $ids
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function deleteExceptionAction($id)
+    public function deleteExceptionAction($uid, $ids)
     {
-        /** @var ObjectManager $em */
-        $em = $this->getDoctrine()->getManager();
-        $repository = $em->getRepository('DisplayPushBundle:DeviceException');
-        $exception = $repository->find($id);
+        try {
+            /** @var ObjectManager $em */
+            $em = $this->getDoctrine()->getManager();
 
-        $success = false;
-        if ($exception) {
-            $em->remove($exception);
-            $em->flush();
-            $success = true;
+            $repository = $em->getRepository('DisplayPushBundle:Device');
+            $device = $repository->findOneBy(array('uid' => $uid));
+
+            $ids = explode(',', $ids);
+            $types = array();
+            $repository = $em->getRepository('DisplayPushBundle:MessageType');
+            foreach ($ids as $id) {
+                $types[] = $repository->find($id);
+            }
+
+            $success = false;
+            if ($device && count($types)) {
+                foreach ($types as $messageType) {
+                    $exception = $em->getRepository('DisplayPushBundle:DeviceException')->findOneBy(compact('device', 'messageType'));
+                    if ($exception) {
+                        $em->remove($exception);
+                        $success = true;
+                    }
+                }
+
+                $em->flush();
+            }
+        } catch (\Exception $e) {
+            $success = false;
         }
 
         return $this->handleView($this->view(compact('success'), 200));

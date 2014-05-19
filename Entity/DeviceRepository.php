@@ -55,7 +55,7 @@ class DeviceRepository extends EntityRepository
             ->createQuery($dql)
             ->setParameter('status', self::STATUS_ACTIVE)
             ->getResult()
-            ;
+        ;
     }
 
     /**
@@ -107,6 +107,6 @@ class DeviceRepository extends EntityRepository
         return $qb
             ->getQuery()
             ->getResult()
-            ;
+        ;
     }
 }

@@ -1,12 +1,12 @@
 device:
     type: rest
     resource: Display\PushBundle\Controller\DeviceController
-    prefix: /
+    prefix: /api
 
 message_type:
     type: rest
     resource: Display\PushBundle\Controller\MessageTypeController
-    prefix: /
+    prefix: /api
 
 backend:
     resource: Display\PushBundle\Controller\BackendController
