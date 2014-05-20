@@ -6,9 +6,10 @@ use Display\PushBundle\Entity\Device;
 use Display\PushBundle\Entity\DeviceException;
 use Display\PushBundle\Entity\DeviceRepository;
 use Display\PushBundle\Entity\Message;
+use Display\PushBundle\Entity\MessageRepository;
 use Display\PushBundle\Entity\MessageType;
-use Display\PushBundle\Entity\Sent;
-use Display\PushBundle\Entity\SentRepository;
+use Display\PushBundle\Entity\Sending;
+use Display\PushBundle\Entity\SendingRepository;
 use RMS\PushNotificationsBundle\Device\iOS\Feedback;
 use RMS\PushNotificationsBundle\Message\AndroidMessage;
 use RMS\PushNotificationsBundle\Message\iOSMessage;
@@ -78,15 +79,17 @@ class PushManager
 
         return $message;
     }
+
     /**
      * Send pending messages
+     * @param int $limit
      */
-    public function sendPendingMessages()
+    public function sendPendingMessages($limit = 10000)
     {
-        $devices = $this->getActiveDevices();
-
+        $sendings = 0;
         /** @var Message $message */
         foreach ($this->getPendingMessages() as $message) {
+            $devices = $this->getActiveDevicesByMessage($message, $limit);
             /** @var Device $device */
             foreach ($devices as $device) {
                 //if message does not target application send to all device or if message applications match device application
@@ -94,11 +97,24 @@ class PushManager
                     || $message->getApplications()->contains($device->getApplication())
                 ) {
                     $this->send($device, $message);
+                    $sendings++;
+                }
+
+                if ($limit === $sendings) {
+                    break;
                 }
             }
-            $message->setIsPending(false);
+
+            $this->manager->flush();
+            //if the message has been fully proceed we set it at pending false
+            if ($this->isProceed($message)) {
+                $message->setIsPending(false);
+            }
+
+            if ($limit === $sendings) {
+                break;
+            }
         }
-        $this->manager->flush();
 
         $this->checkFeedback();
     }
@@ -158,12 +174,11 @@ class PushManager
      */
     protected function send(Device $device, Message $message)
     {
-        if ($this->hasException($device, $message)) return null;
-
+        //if ($this->hasException($device, $message)) return null; should not be usefull
         $this->container->get('logger')->addDebug(sprintf('sending to %s device: %s', $device->getOsName(), $device->getId()));
-        $sending = new Sent();
+        $sending = new Sending();
         $sending
-            ->setStatus(SentRepository::STATUS_QUEUED)
+            ->setStatus(SendingRepository::STATUS_QUEUED)
             ->setDevice($device)
             ->setMessage($message)
         ;
@@ -172,11 +187,11 @@ class PushManager
         $push = $this->getPushMessage($device, $message);
         //$push is null if device is not iOS|Android && push succeed
         if (null !== $push && $this->pusher->send($push)) {
-            $sending->setStatus(SentRepository::STATUS_DELIVERED); ;
+            $sending->setStatus(SendingRepository::STATUS_DELIVERED); ;
             $sending->setDeliveredAt(new \DateTime());
             $success = true;
         } else {
-            $sending->setStatus(SentRepository::STATUS_FAILED); ;
+            $sending->setStatus(SendingRepository::STATUS_FAILED); ;
             $success = false;
             $device->setStatus(DeviceRepository::STATUS_UNINSTALLED);
         }
@@ -213,6 +228,19 @@ class PushManager
     protected function getPendingMessages()
     {
         return $this->manager->getRepository('DisplayPushBundle:Message')->getPendings();
+    }
+
+    /**
+     * Get active device by message
+     *
+     * @param Message $message
+     * @param integer $limit
+     *
+     * @return array|\Display\PushBundle\Entity\Device[]
+     */
+    protected function getActiveDevicesByMessage($message, $limit = 10000)
+    {
+        return $this->manager->getRepository('DisplayPushBundle:Device')->getActivesByMessage($message, $limit);
     }
 
     /**
@@ -296,4 +324,17 @@ class PushManager
 
         return false;
     }
+
+    /**
+     * @param Message $message
+     * @return bool
+     */
+    protected function isProceed(Message $message)
+    {
+        /** @var MessageRepository $repository */
+        $repository = $this->manager->getRepository('DisplayPushBundle:Message');
+
+        return $repository->isProceed($message);
+    }
+
 }

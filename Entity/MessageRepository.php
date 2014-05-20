@@ -3,6 +3,7 @@
 namespace Display\PushBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 
 /**
  * MessageRepository
@@ -28,5 +29,42 @@ class MessageRepository extends EntityRepository
             ->setParameter('is_pending', true)
             ->getResult()
         ;
+    }
+
+    /**
+     * @param Message $message
+     * @return bool
+     */
+    public function isProceed(Message $message)
+    {
+        $em = $this->getEntityManager();
+
+        $dql = 'SELECT COUNT(s.id)
+                FROM DisplayPushBundle:Sending s
+                JOIN s.message m
+                WHERE m.id = :message_id';
+
+        $nbSendings = $em->createQuery($dql)
+            ->setParameter('message_id', $message->getId())
+            ->getSingleScalarResult()
+        ;
+
+        $rsm = new ResultSetMappingBuilder($em);
+        $rsm->addScalarResult('nb_devices', 'nbDevices');
+
+        $sql = "SELECT COUNT(d.id) AS nb_devices
+                FROM push_device d
+                LEFT JOIN push_device_exception de ON d.id = de.device_id AND de.message_type_id = :message_type_id
+                WHERE d.status = :status AND de.id IS NULL";
+
+        $nbDevices = $em->createNativeQuery($sql, $rsm)
+            ->setParameters(array(
+                'status' => DeviceRepository::STATUS_ACTIVE,
+                'message_type_id' => $message->getMessageType()->getId()
+            ))
+            ->getSingleScalarResult()
+        ;
+
+        return $nbSendings >= $nbDevices;
     }
 }

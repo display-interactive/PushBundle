@@ -81,6 +81,13 @@ class Device extends Entity
      * @ORM\OneToMany(targetEntity="DeviceException", mappedBy="device", cascade={"persist"})
      */
     private $exceptions;
+
+    /**
+     * @var ArrayCollection $sents
+     * @ORM\OneToMany(targetEntity="Sending", mappedBy="device")
+     */
+    private $sendings;
+
     /**
      * Constructor
      */
@@ -92,7 +99,7 @@ class Device extends Entity
     /**
      * Get id
      *
-     * @return integer
+     * @return integer 
      */
     public function getId()
     {
@@ -115,7 +122,7 @@ class Device extends Entity
     /**
      * Get uid
      *
-     * @return string
+     * @return string 
      */
     public function getUid()
     {
@@ -138,7 +145,7 @@ class Device extends Entity
     /**
      * Get token
      *
-     * @return string
+     * @return string 
      */
     public function getToken()
     {
@@ -161,7 +168,7 @@ class Device extends Entity
     /**
      * Get model
      *
-     * @return string
+     * @return string 
      */
     public function getModel()
     {
@@ -184,7 +191,7 @@ class Device extends Entity
     /**
      * Get locale
      *
-     * @return string
+     * @return string 
      */
     public function getLocale()
     {
@@ -207,7 +214,7 @@ class Device extends Entity
     /**
      * Get osName
      *
-     * @return string
+     * @return string 
      */
     public function getOsName()
     {
@@ -230,7 +237,7 @@ class Device extends Entity
     /**
      * Get osVersion
      *
-     * @return string
+     * @return string 
      */
     public function getOsVersion()
     {
@@ -253,7 +260,7 @@ class Device extends Entity
     /**
      * Get status
      *
-     * @return string
+     * @return string 
      */
     public function getStatus()
     {
@@ -314,5 +321,38 @@ class Device extends Entity
     public function getExceptions()
     {
         return $this->exceptions;
+    }
+
+    /**
+     * Add sending
+     *
+     * @param Sending $sending
+     * @return Device
+     */
+    public function addSending(Sending $sending)
+    {
+        $this->sendings[] = $sending;
+
+        return $this;
+    }
+
+    /**
+     * Remove sending
+     *
+     * @param Sending $sending
+     */
+    public function removeSending(Sending $sending)
+    {
+        $this->sendings->removeElement($sending);
+    }
+
+    /**
+     * Get sendings
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getSendings()
+    {
+        return $this->sendings;
     }
 }

@@ -21,6 +21,7 @@ class PushCommand extends ContainerAwareCommand
             ->addOption('os', 'o', InputOption::VALUE_OPTIONAL, 'filter devices by os')
             ->addOption('uid', 'u', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'force device uid')
             ->addOption('app_id', 'a', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'force application id')
+            ->addOption('limit', null, InputOption::VALUE_OPTIONAL, 'number max of send push', 10000)
         ;
     }
 
@@ -42,10 +43,12 @@ class PushCommand extends ContainerAwareCommand
             if ($text) {
                 $pm->sendMessage($text, $os, $appIds, $locale, $uids);
             } else {
-                $pm->sendPendingMessages();
+                $pm->sendPendingMessages($input->getOption('limit'));
             }
         } catch (\Exception $e) {
             $logger->addError($e->getMessage());
+            $output->writeln($e->getMessage());
+            $output->writeln($e->getTraceAsString());
 
             $now = new \DateTime();
             $message = \Swift_Message::newInstance()
