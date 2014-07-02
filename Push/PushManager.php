@@ -96,8 +96,7 @@ class PushManager
                 if ($message->getApplications()->count() === 0
                     || $message->getApplications()->contains($device->getApplication())
                 ) {
-                    $this->send($device, $message);
-                    $sendings++;
+                    if (null !== $this->send($device, $message)) $sendings++;
                 }
 
                 if ($limit === $sendings) {
@@ -105,7 +104,6 @@ class PushManager
                 }
             }
 
-            $this->manager->flush();
             //if the message has been fully proceed we set it at pending false
             if ($this->isProceed($message)) {
                 $message->setIsPending(false);
@@ -116,7 +114,9 @@ class PushManager
             }
         }
 
-        $this->checkFeedback();
+        if ($sendings > 0) $this->checkFeedback();
+
+        $this->manager->flush();
     }
 
     /**
@@ -174,15 +174,18 @@ class PushManager
      */
     protected function send(Device $device, Message $message)
     {
-        //if ($this->hasException($device, $message)) return null; should not be usefull
+        //if message was already sent
+        if ($this->wasSent($device, $message)) return null;
+
+        if ($this->hasException($device, $message)) return null;
         $this->container->get('logger')->addDebug(sprintf('sending to %s device: %s', $device->getOsName(), $device->getId()));
+
         $sending = new Sending();
         $sending
             ->setStatus(SendingRepository::STATUS_QUEUED)
             ->setDevice($device)
             ->setMessage($message)
         ;
-        $this->manager->persist($sending);
 
         $push = $this->getPushMessage($device, $message);
         //$push is null if device is not iOS|Android && push succeed
@@ -195,6 +198,9 @@ class PushManager
             $success = false;
             $device->setStatus(DeviceRepository::STATUS_UNINSTALLED);
         }
+
+        $this->manager->persist($sending);
+        $this->manager->flush();
 
         return $success;
     }
@@ -240,7 +246,7 @@ class PushManager
      */
     protected function getActiveDevicesByMessage($message, $limit = 10000)
     {
-        return $this->manager->getRepository('DisplayPushBundle:Device')->getActivesByMessage($message, $limit);
+        return $this->manager->getRepository('DisplayPushBundle:Device')->findDevicesByMessage($message, $limit);
     }
 
     /**
@@ -269,6 +275,8 @@ class PushManager
                 $push->setAPSSound('default');
                 $push->setAPSBadge('1');
                 $push->setAPSContentAvailable(1);
+                $expiry = $this->container->getParameter('ios_expiry');
+                $push->setExpiry($expiry > 0 ? (time() + $expiry) : 0);
                 break;
             case DeviceRepository::OS_ANDROID:
                 $push = new AndroidMessage();
@@ -323,6 +331,21 @@ class PushManager
         }
 
         return false;
+    }
+
+    /**
+     * Check if the message was already sent to the device
+     *
+     * @param Device $device
+     * @param Message $message
+     * @return bool
+     */
+    protected function wasSent(Device $device, Message $message)
+    {
+        /** @var SendingRepository $repository */
+        $repository = $this->manager->getRepository('DisplayPushBundle:Sending');
+
+        return $repository->wasSent($device, $message);
     }
 
     /**

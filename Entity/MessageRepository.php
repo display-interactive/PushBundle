@@ -52,15 +52,25 @@ class MessageRepository extends EntityRepository
         $rsm = new ResultSetMappingBuilder($em);
         $rsm->addScalarResult('nb_devices', 'nbDevices');
 
+        $appIds = array();
+        /** @var Application $app */
+        foreach ($message->getApplications() as $app) {
+            $appIds[] = $app->getId();
+        }
+
         $sql = "SELECT COUNT(d.id) AS nb_devices
                 FROM push_device d
+                JOIN push_application a ON a.id = d.application_id
                 LEFT JOIN push_device_exception de ON d.id = de.device_id AND de.message_type_id = :message_type_id
-                WHERE d.status = :status AND de.id IS NULL";
+                WHERE d.status = :status
+                  AND a.id IN (:app_ids)
+                  AND de.id IS NULL";
 
         $nbDevices = $em->createNativeQuery($sql, $rsm)
             ->setParameters(array(
                 'status' => DeviceRepository::STATUS_ACTIVE,
-                'message_type_id' => $message->getMessageType()->getId()
+                'message_type_id' => $message->getMessageType()->getId(),
+                'app_ids' => $appIds,
             ))
             ->getSingleScalarResult()
         ;

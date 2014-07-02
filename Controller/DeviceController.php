@@ -50,6 +50,11 @@ class DeviceController extends FOSRestController implements ClassResourceInterfa
 
             if (!$application) {
                 $application = new Application();
+                $application
+                    ->setName($paramFetcher->get('app_name'))
+                    ->setVersion($paramFetcher->get('app_version'))
+                ;
+                $em->persist($application);
             }
             $device->setApplication($application);
 
@@ -61,11 +66,6 @@ class DeviceController extends FOSRestController implements ClassResourceInterfa
                 ->setOsName($paramFetcher->get('os_name'))
                 ->setOsVersion($paramFetcher->get('os_version'))
                 ->setStatus(DeviceRepository::STATUS_ACTIVE)
-            ;
-
-            $application
-                ->setName($paramFetcher->get('app_name'))
-                ->setVersion($paramFetcher->get('app_version'))
             ;
 
             $em->persist($device);

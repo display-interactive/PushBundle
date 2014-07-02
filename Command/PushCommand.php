@@ -30,6 +30,14 @@ class PushCommand extends ContainerAwareCommand
         /** @var Logger $logger */
         $logger = $this->getContainer()->get('logger');
 
+        $lock = sys_get_temp_dir().'/push.lock';
+        if (file_exists($lock)) {
+            $output->writeln('already running push');
+            return;
+        }
+
+        file_put_contents($lock, time());
+
         $output->writeln('starting push');
 
         try {
@@ -60,6 +68,7 @@ class PushCommand extends ContainerAwareCommand
             $this->getContainer()->get('mailer')->send($message);
         }
 
+        unlink($lock);
         $output->writeln('ending push');
     }
 }

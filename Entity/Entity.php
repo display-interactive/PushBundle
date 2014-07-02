@@ -5,7 +5,7 @@ namespace Display\PushBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * abstract Class Entity
+ * Class AbstractEntity
  * @package Display\PushBundle\Entity
  * @ORM\MappedSuperclass
  * @ORM\HasLifecycleCallbacks()

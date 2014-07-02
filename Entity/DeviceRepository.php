@@ -96,12 +96,12 @@ class DeviceRepository extends EntityRepository
                   de.id AS de_id, de.message_type_id, mt.text,
                   d.application_id, a.name, a.version
                 FROM push_device d
-                LEFT JOIN push_device_exception de ON de.device_id = d.id
-                LEFT JOIN push_application a ON a.id = d.application_id
-                LEFT JOIN push_message_type mt ON mt.id = de.message_type_id
+                JOIN push_application a ON a.id = d.application_id
                 LEFT JOIN push_sending s ON s.device_id = d.id AND s.message_id = :message_id
                 LEFT JOIN push_message m ON s.message_id = m.id
-                WHERE (de.message_type_id IS NULL OR de.message_type_id <> m.message_type_id)
+                LEFT JOIN push_device_exception de ON de.device_id = d.id AND de.message_type_id = m.message_type_id
+                LEFT JOIN push_message_type mt ON mt.id = de.message_type_id
+                WHERE de.message_type_id IS NULL
                   AND d.status = :status
                   AND s.id IS NULL
                 LIMIT ' . $limit;
@@ -115,6 +115,61 @@ class DeviceRepository extends EntityRepository
             ))
             ->getResult()
         ;
+    }
+
+    /**
+     * @param Message $message
+     * @param integer $limit
+     * @return array|Device[]
+     */
+    public function findDevicesByMessage(Message $message, $limit = 10000)
+    {
+        $rsm = new ResultSetMapping();
+        $rsm
+            ->addEntityResult('Display\PushBundle\Entity\Device', 'd')
+            ->addFieldResult('d', 'id', 'id')
+            ->addFieldResult('d', 'created_at', 'createdAt')
+            ->addFieldResult('d', 'updated_at', 'updatedAt')
+            ->addFieldResult('d', 'uid', 'uid')
+            ->addFieldResult('d', 'token', 'token')
+            ->addFieldResult('d', 'model', 'model')
+            ->addFieldResult('d', 'locale', 'locale')
+            ->addFieldResult('d', 'os_name', 'osName')
+            ->addFieldResult('d', 'os_version', 'osVersion')
+            ->addFieldResult('d', 'status', 'status')
+            ->addJoinedEntityResult('Display\PushBundle\Entity\DeviceException', 'de', 'd', 'exceptions')
+            ->addFieldResult('de', 'de_id', 'id')
+            ->addJoinedEntityResult('Display\PushBundle\Entity\MessageType', 'mt', 'de', 'messageType')
+            ->addFieldResult('mt', 'message_type_id', 'id')
+            ->addFieldResult('mt', 'text', 'text')
+            ->addJoinedEntityResult('Display\PushBundle\Entity\Application', 'a', 'd', 'application')
+            ->addFieldResult('a', 'application_id', 'id')
+            ->addFieldResult('a', 'name', 'name')
+            ->addFieldResult('a', 'version', 'version')
+        ;
+
+        $sql = 'SELECT d.id, d.created_at, d.updated_at, d.uid, d.token, d.model, d.locale,
+                  d.os_name, d.os_version, d.status,
+                  de.id AS de_id, de.message_type_id, mt.text,
+                  d.application_id, a.name, a.version
+                FROM push_device d
+                JOIN push_application a ON a.id = d.application_id
+                LEFT JOIN push_sending s ON s.device_id = d.id AND s.message_id = :message_id
+                LEFT JOIN push_device_exception de ON de.device_id = d.id
+                LEFT JOIN push_message_type mt ON mt.id = de.message_type_id
+                WHERE d.status = :status
+                  AND s.id IS NULL
+                LIMIT ' . $limit;
+
+        return $this
+            ->getEntityManager()
+            ->createNativeQuery($sql, $rsm)
+            ->setParameters(array(
+                'status' => self::STATUS_ACTIVE,
+                'message_id' => $message->getId()
+            ))
+            ->getResult()
+            ;
     }
 
     /**

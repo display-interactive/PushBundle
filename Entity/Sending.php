@@ -5,12 +5,12 @@ namespace Display\PushBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Sent
+ * Sending
  *
- * @ORM\Table("push_sent")
- * @ORM\Entity(repositoryClass="Display\PushBundle\Entity\SentRepository")
+ * @ORM\Table("push_sending")
+ * @ORM\Entity(repositoryClass="Display\PushBundle\Entity\SendingRepository")
  */
-class Sent extends Entity
+class Sending extends Entity
 {
     /**
      * @var integer
@@ -62,7 +62,7 @@ class Sent extends Entity
      * Set status
      *
      * @param string $status
-     * @return Sent
+     * @return Sending
      */
     public function setStatus($status)
     {
@@ -85,7 +85,7 @@ class Sent extends Entity
      * Set deliveredAt
      *
      * @param \DateTime $deliveredAt
-     * @return Sent
+     * @return Sending
      */
     public function setDeliveredAt($deliveredAt)
     {
@@ -108,7 +108,7 @@ class Sent extends Entity
      * Set device
      *
      * @param Device $device
-     * @return Sent
+     * @return Sending
      */
     public function setDevice(Device $device = null)
     {
@@ -131,7 +131,7 @@ class Sent extends Entity
      * Set message
      *
      * @param Message $message
-     * @return Sent
+     * @return Sending
      */
     public function setMessage(Message $message = null)
     {
